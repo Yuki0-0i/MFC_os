@@ -38,6 +38,7 @@ extern int insertCount1;
 extern int delRemain;
 extern HANDLE hwriteblock;
 extern HANDLE hCoutMutex;
+extern vector<string> message;
 const int numThreads2 = 15;//指定数量的读者写者的线程
 
 void add(List& mylist);

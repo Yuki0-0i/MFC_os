@@ -45,4 +45,5 @@ public:
 	afx_msg void OnBnClickedButtonSafeThreadDelete();
 	afx_msg void OnBnClickedButtonSafeThreadReadWrite();
 	afx_msg void OnBnClickedButtonClear();
+	CListBox m_list_box;
 };

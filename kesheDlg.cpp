@@ -25,6 +25,7 @@ void CkesheDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_SHOW, m_list_show);
+	DDX_Control(pDX, IDC_LIST_MES, m_list_box);
 }
 
 BEGIN_MESSAGE_MAP(CkesheDlg, CDialogEx)
@@ -128,15 +129,19 @@ HBRUSH CkesheDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 void CkesheDlg::OnBnClickedButtonAdd()
 {
 	add(mylist);
+	m_list_box.ResetContent();
 	CString temp;
 	temp.Format(_T("添加完成"));
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonSearch()
 {
 	CString temp;
+	GetDlgItemText(IDC_EDIT1, temp);
+	USES_CONVERSION;
+	name = T2A(temp);
 	m_list_show.ClearData();
 
 	Node* p = mylist.head;
@@ -157,31 +162,33 @@ void CkesheDlg::OnBnClickedButtonSearch()
 	else {
 		temp.Format(_T("共找到 %d 个姓名为 %s 的联系人."), count, CString(name.c_str()));
 	}
-
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonModify()
 {
+	m_list_box.ResetContent();
 	updateone(mylist, updPosition);
 	CString temp;
 	temp.Format(_T("修改完成"), mylist.length);
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonDelete()
 {
+	m_list_box.ResetContent();
 	delone(mylist, delPosition);
 	CString temp;
 	temp.Format(_T("删除完成"), mylist.length);
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonShow()
 {
+	m_list_box.ResetContent();
 	//清空数据
 	m_list_show.ClearData();
 
@@ -194,37 +201,46 @@ void CkesheDlg::OnBnClickedButtonShow()
 	m_list_show.UpItemData();
 
 	CString temp;
-	temp.Format(_T("显示完成\r\n总人数：%d\r\n"), i - 1);
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	temp.Format(_T("显示完成"));
+	m_list_box.AddString(temp);
+	temp.Format(_T("总人数：%d"), i - 1);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonMulthreadInsert()
 {
+	m_list_box.ResetContent();
 	CString temp;
 	//清空数据
 	m_list_show.ClearData();
 
 	InitializeList(mylist);
-	temp.Format(_T("初始化通讯录链表成功！\r\n"));
-	temp.Format(_T("%s初始时总人数：%d\r\n"), temp, mylist.length);
+	temp.Format(_T("初始化通讯录链表成功"));
+	m_list_box.AddString(temp);
+	temp.Format(_T("初始时总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
 	ExecuteThreads(mylist, InsertThread, "插入");
-	temp.Format(_T("%s所有线程执行完毕！\r\n"), temp);
-	temp.Format(_T("%s总人数：%d\r\n"), temp, mylist.length);
-	temp.Format(_T("%s测试插入总人数：%d\r\n"), temp, insertCount1);
+	temp.Format(_T("所有线程执行完毕"));
+	m_list_box.AddString(temp);
+	temp.Format(_T("总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
+	temp.Format(_T("测试插入总人数：%d"), insertCount1);
+	m_list_box.AddString(temp);
 	if (mylist.length == insertCount1) {
-		temp.Format(_T("%s测试成功!\r\n"), temp);
+		temp.Format(_T("测试成功!"));
 	}
 	else {
-		temp.Format(_T("%s测试失败!\r\n"), temp);
+		temp.Format(_T("测试失败!"));
 	}
+	m_list_box.AddString(temp);
 	m_list_show.UpItemData();
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonMulthreadDelete()
 {
+	m_list_box.ResetContent();
 	DeleteInitialization(mylist);
 	ExecuteThreads(mylist, DelThread, "删除");
 	int count = 0;
@@ -234,56 +250,68 @@ void CkesheDlg::OnBnClickedButtonMulthreadDelete()
 		current = current->next;
 	}
 	CString temp;
-	temp.Format(_T("总人数：%d\r\n"), mylist.length);
-	temp.Format(_T("%s总人数：%d\r\n"), temp, count);
-	temp.Format(_T("%s测试删除后剩余人数：%d\r\n"), temp, delRemain);
+	temp.Format(_T("总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
+	temp.Format(_T("总人数：%d"), count);
+	m_list_box.AddString(temp);
+	temp.Format(_T("测试删除后剩余人数：%d"), delRemain);
+	m_list_box.AddString(temp);
 	if (count == delRemain) {
-		temp.Format(_T("%s测试成功!"), temp);
+		temp.Format(_T("测试成功!"));
 	}
 	else {
-		temp.Format(_T("%s测试失败!"), temp);
+		temp.Format(_T("测试失败!"));
 	}
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonSafeThreadInsert()
 {
+	m_list_box.ResetContent();
 	CString temp;
 	InitializeList(mylist);
 	ExecuteThreads(mylist, InsertThread_Safe, "安全插入");
-	temp.Format(_T("总人数：%d\r\n"), mylist.length);
-	temp.Format(_T("%s测试插入总人数：%d\r\n"), temp, mylist.length);
+	temp.Format(_T("总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
+	temp.Format(_T("测试插入总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
 	if (mylist.length == insertCount1) {
-		temp.Format(_T("%s测试成功!\r\n"), temp);
+		temp.Format(_T("测试成功!"), temp);
 	}
 	else {
-		temp.Format(_T("%s测试失败!\r\n"), temp);
+		temp.Format(_T("测试失败!"), temp);
 	}
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonSafeThreadDelete()
 {
+	m_list_box.ResetContent();
 	CString temp;
 	DeleteInitialization(mylist);
 	ExecuteThreads(mylist, DelThread_Safe, "安全删除");
-	temp.Format(_T("安全删除完成\r\n"));
-	temp.Format(_T("%s总人数：%d\r\n"), temp, mylist.length);
-	temp.Format(_T("%s测试删除后剩余人数：%d\r\n"), temp, delRemain);
+	temp.Format(_T("安全删除完成"));
+	m_list_box.AddString(temp);
+	temp.Format(_T("总人数：%d"), mylist.length);
+	m_list_box.AddString(temp);
+	temp.Format(_T("测试删除后剩余人数：%d"), delRemain);
+	m_list_box.AddString(temp);
 	if (mylist.length == delRemain) {
-		temp.Format(_T("%s测试成功!\r\n"), temp);
+		temp.Format(_T("测试成功!"), temp);
 	}
 	else {
-		temp.Format(_T("%s测试失败!\r\n"), temp);
+		temp.Format(_T("测试失败!"), temp);
 	}
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonSafeThreadReadWrite()
 {
+	m_list_box.ResetContent();
+	message.clear();
 	CString temp;
 	RWInitialization(mylist);
 	hwriteblock = CreateMutex(NULL, FALSE, NULL); 
@@ -312,17 +340,23 @@ void CkesheDlg::OnBnClickedButtonSafeThreadReadWrite()
 	for (int i = 0; i < numThreads2; ++i) {
 		CloseHandle(threads[i]);
 	}
+	for (int i = 0; i < message.size(); i++)
+	{
+		m_list_box.AddString(CString(message[i].c_str()));
+	}
+	message.clear();
 	temp.Format(_T("测试完成!\r\n"), temp);
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	m_list_box.AddString(temp);
 }
 
 
 void CkesheDlg::OnBnClickedButtonClear()
 {
+	m_list_box.ResetContent();
 	CString temp;
 	m_list_show.ClearData();
 	m_list_show.UpItemData();
 	delall(mylist);
-	temp.Format(_T("清空初始化完成!\r\n"), temp);
-	SetDlgItemText(IDC_STATIC_SHOW, temp);
+	temp.Format(_T("清空初始化完成!"), temp);
+	m_list_box.AddString(temp);
 }

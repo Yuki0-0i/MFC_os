@@ -59,6 +59,8 @@ int threadcount = 0;
 std::mutex listMutex;
 std::mutex coutMutex;
 
+vector<string> message;
+
 void InitializeList(List& mylist) {
     while (mylist.head != nullptr) {
         Node* temp = mylist.head;
@@ -180,6 +182,7 @@ void RWInitialization(List& mylist) {
 // 读者线程，读者优先
 unsigned int __stdcall ReaderThread(void* p)
 {
+    char buffer[256];
     int threadId = *((int*)p);
     WaitForSingleObject(hmutex, INFINITE);
     readcount++;
@@ -190,11 +193,12 @@ unsigned int __stdcall ReaderThread(void* p)
     for (int i = 0; i < modifiedPositionsCount; ++i) {
         WaitForSingleObject(hCoutMutex, INFINITE);//输出不混乱
         int modifiedPosition = modifiedPositions[i];
-        cout << "读者线程" << threadId << " 正在读取第 " << modifiedPosition << " 的联系人信息:" << endl;
+        sprintf(buffer,"读者线程 %d 正在读取第 %d 的联系人信息:", threadId, modifiedPosition);
+        message.push_back(buffer);
         search(mylist, modifiedPosition);
         ReleaseMutex(hCoutMutex);
         WaitForSingleObject(hCoutMutex, INFINITE);
-        cout << "读取成功" << endl;
+        message.push_back("读取成功");
         ReleaseMutex(hCoutMutex);
     }
     WaitForSingleObject(hmutex, INFINITE);
@@ -208,11 +212,13 @@ unsigned int __stdcall ReaderThread(void* p)
 // 写者修改线程
 unsigned int __stdcall WriterThreadUpd(void* p)
 {
+    char buffer[256];
     int threadId = *((int*)p);
     int position = threadId * 10 / 2 + 1; // 计算对应的位置
     WaitForSingleObject(hwriteblock, INFINITE);
-    cout << "写者线程" << threadId << " 正在修改第 " << position << "的联系人信息:" << endl;
-    cout << "修改成功" << endl;
+    sprintf(buffer, "写者线程 %d 正在修改第 %d 的联系人信息:", threadId, position);
+    message.push_back(buffer);
+    message.push_back("修改成功");
     update(mylist, position, threadId);
     // 记录修改的位置
     modifiedPositions[modifiedPositionsCount++] = position;
@@ -222,13 +228,15 @@ unsigned int __stdcall WriterThreadUpd(void* p)
 // 写者删除线程
 unsigned int __stdcall WriterThreadDel(void* p)
 {
+    char buffer[256];
     int threadId = *((int*)p);
     WaitForSingleObject(hwriteblock, INFINITE);
     for (int i = 0; i < modifiedPositionsCount; ++i) {
         int modifiedPosition = modifiedPositions[i];
-        cout << "写者线程" << threadId << " 正在删除第 " << modifiedPosition << " 的联系人信息:" << endl;
+        sprintf(buffer, "写者线程 %d 正在删除第 %d 的联系人信息:", threadId, modifiedPosition);
+        message.push_back(buffer);
         delone2(mylist, modifiedPosition);
-        cout << "删除成功" << endl;
+        message.push_back("删除成功");
     }
     ReleaseMutex(hwriteblock);
     return 0;
