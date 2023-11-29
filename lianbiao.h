@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <random>
 #include <thread>
+#include "safeVector.h"
 using namespace std;
 //实验名称：通讯录管理
 
@@ -38,7 +39,7 @@ extern int insertCount1;
 extern int delRemain;
 extern HANDLE hwriteblock;
 extern HANDLE hCoutMutex;
-extern vector<string> message;
+extern safeVector message;
 const int numThreads2 = 15;//指定数量的读者写者的线程
 
 void add(List& mylist);

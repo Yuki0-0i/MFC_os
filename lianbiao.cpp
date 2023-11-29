@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <random>
 #include <thread>
-
+#include "safeVector.h"
 using namespace std;
 //实验名称：通讯录管理
 
@@ -59,7 +59,7 @@ int threadcount = 0;
 std::mutex listMutex;
 std::mutex coutMutex;
 
-vector<string> message;
+safeVector message;
 
 void InitializeList(List& mylist) {
     while (mylist.head != nullptr) {
@@ -182,7 +182,7 @@ void RWInitialization(List& mylist) {
 // 读者线程，读者优先
 unsigned int __stdcall ReaderThread(void* p)
 {
-    char buffer[256];
+    char buffer[256] = {0};
     int threadId = *((int*)p);
     WaitForSingleObject(hmutex, INFINITE);
     readcount++;
@@ -212,7 +212,7 @@ unsigned int __stdcall ReaderThread(void* p)
 // 写者修改线程
 unsigned int __stdcall WriterThreadUpd(void* p)
 {
-    char buffer[256];
+    char buffer[256] = { 0 };
     int threadId = *((int*)p);
     int position = threadId * 10 / 2 + 1; // 计算对应的位置
     WaitForSingleObject(hwriteblock, INFINITE);
@@ -228,7 +228,7 @@ unsigned int __stdcall WriterThreadUpd(void* p)
 // 写者删除线程
 unsigned int __stdcall WriterThreadDel(void* p)
 {
-    char buffer[256];
+    char buffer[256] = { 0 };
     int threadId = *((int*)p);
     WaitForSingleObject(hwriteblock, INFINITE);
     for (int i = 0; i < modifiedPositionsCount; ++i) {
