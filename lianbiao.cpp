@@ -196,15 +196,15 @@ unsigned int __stdcall ReaderThread(void* p)
         sprintf(buffer,"读者线程 %d 正在读取第 %d 的联系人信息:", threadId, modifiedPosition);
         message.push_back(buffer);
         search(mylist, modifiedPosition);
-        ReleaseMutex(hCoutMutex);
+        ReleaseSemaphore(hCoutMutex, 1, NULL);
         WaitForSingleObject(hCoutMutex, INFINITE);
         message.push_back("读取成功");
-        ReleaseMutex(hCoutMutex);
+        ReleaseSemaphore(hCoutMutex, 1, NULL);
     }
     WaitForSingleObject(hmutex, INFINITE);
     readcount--;
     if (readcount == 0) {
-        ReleaseMutex(hwriteblock);
+        ReleaseSemaphore(hwriteblock, 1, NULL);
     }
     ReleaseMutex(hmutex);
     return 0;
@@ -222,7 +222,7 @@ unsigned int __stdcall WriterThreadUpd(void* p)
     update(mylist, position, threadId);
     // 记录修改的位置
     modifiedPositions[modifiedPositionsCount++] = position;
-    ReleaseMutex(hwriteblock);
+    ReleaseSemaphore(hwriteblock, 1, NULL);
     return 0;
 }
 // 写者删除线程
@@ -238,11 +238,12 @@ unsigned int __stdcall WriterThreadDel(void* p)
         delone2(mylist, modifiedPosition);
         message.push_back("删除成功");
     }
-    ReleaseMutex(hwriteblock);
+    ReleaseSemaphore(hwriteblock, 1, NULL);
     return 0;
 }
 void search(List& mylist, int position)
 {
+    char buffer[256] = { 0 };
     if (position <= 0 || position > mylist.length) {
         cout << "对不起，通讯录中没有指定位置的联系人." << endl;
         return;
@@ -254,9 +255,8 @@ void search(List& mylist, int position)
         index++;
     }
     if (p != NULL) {// 输出指定位置的联系人信息
-        cout << "|序号\t|★*\t姓名\t*★|★*\t电话\t\t*★|" << endl;
-        cout << "|" << position << "\t|★ *\t" << p->contact.name << "\t*★|★*\t" << p->contact.tel << "\t*★|" << endl;
-        cout << "----------------------------------------------------" << endl;
+        sprintf(buffer, "序号 %d 姓名%s 电话%s:", position,p->contact.name.c_str(), p->contact.tel.c_str());
+        message.push_back(buffer);
     }
     else {
         cout << "对不起，通讯录中没有指定位置的联系人." << endl;
@@ -265,6 +265,7 @@ void search(List& mylist, int position)
 
 void update(List& mylist, int position, int threadId)
 {
+    char buffer[256] = { 0 };
     int index = 1;
     Node* p = mylist.head;
     // 寻找指定位置的节点
@@ -300,10 +301,13 @@ void update(List& mylist, int position, int threadId)
         break;
     }
     // 输出修改后的结果
-    cout << "---------------------CONTACTS-----------------------" << endl;
-    cout << "|序号\t|★*\t姓名\t*★|★*\t电话\t\t*★|" << endl;
-    cout << "|" << position << "\t|★ *\t" << p->contact.name << "\t*★|★*\t" << p->contact.tel << "\t*★|" << endl;
-    cout << "----------------------------------------------------" << endl;
+    sprintf(buffer, "序号 %d 姓名%s 电话%s:", position,p->contact.name.c_str(), p->contact.tel.c_str());
+    message.push_back(buffer);
+    //cout << "---------------------CONTACTS-----------------------" << endl;
+    //cout << "|序号\t|★*\t姓名\t*★|★*\t电话\t\t*★|" << endl;
+    //cout << "|" << position << "\t|★ *\t" << p->contact.name << "\t*★|★*\t" << p->contact.tel << "\t*★|" << endl;
+    //cout << "----------------------------------------------------" << endl;
+
 }
 
 void searchone(List& mylist, string name) {
@@ -399,7 +403,7 @@ void DeleteInitialization(List& mylist) {
 unsigned int __stdcall DelThread(void* arg) {
     List& mylist = *reinterpret_cast<List*>(arg);
     for (int i = 0; i < delCount; ++i) {
-        delone2(mylist, delPosition);
+        delone(mylist, delPosition);
         //delone(mylist);
     }
     return 0;
@@ -453,10 +457,11 @@ void delone(List& mylist, int fixedPosition) {
         mylist.tail = p;
     }
     //cout << "通讯录已删除第" << fixedPosition << "个联系人：" << p5->contact.name << "，电话：" << p5->contact.tel << endl;
-    delete p5;
+    //delete p5;
     mylist.length--;
 }
 void delone2(List& mylist, int fixedPosition) {
+    char buffer[256] = { 0 };
     if (fixedPosition <= 0) {
         cout << "无效的位置。" << endl;
         return;
@@ -495,6 +500,8 @@ void delone2(List& mylist, int fixedPosition) {
         mylist.tail = p;
     }
     cout << "通讯录已删除第" << fixedPosition << "个联系人：" << p5->contact.name << "，电话：" << p5->contact.tel << endl;
+    sprintf(buffer, "已删除第 %d 姓名%s 电话%s:", fixedPosition, p->contact.name.c_str(), p->contact.tel.c_str());
+    message.push_back(buffer);
     delete p5;
     mylist.length--;
 }

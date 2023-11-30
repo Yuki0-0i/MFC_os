@@ -314,8 +314,8 @@ void CkesheDlg::OnBnClickedButtonSafeThreadReadWrite()
 	message.clear();
 	CString temp;
 	RWInitialization(mylist);
-	hwriteblock = CreateMutex(NULL, FALSE, NULL); 
-	hCoutMutex = CreateMutex(NULL, FALSE, NULL);
+	hwriteblock = CreateSemaphore(NULL, 1, 1, NULL); 
+	hCoutMutex = CreateSemaphore(NULL, 1, 1, NULL);
 	HANDLE threads[numThreads2] = { NULL };
 	int threadIds[numThreads2] = { 0, 1, 2, 3, 4 ,5,6,7,8,9,10,11,12,13,14 };  // 每个线程有一个唯一的ID
 	for (int i = 0; i < numThreads2; ++i) {
